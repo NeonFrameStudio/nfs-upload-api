@@ -5,6 +5,13 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 
 const app = express();
+app.use(cors({
+  origin: [
+    "https://neonframestudio.com",
+    "https://www.neonframestudio.com"
+  ],
+  methods: ["GET", "POST", "OPTIONS"]
+}));
 const upload = multer({ storage: multer.memoryStorage() });
 
 const s3 = new S3Client({
