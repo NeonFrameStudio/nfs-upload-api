@@ -5,6 +5,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 
 const app = express();
+
 app.use(cors({
   origin: [
     "https://neonframestudio.com",
@@ -12,6 +13,7 @@ app.use(cors({
   ],
   methods: ["GET", "POST", "OPTIONS"]
 }));
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 const s3 = new S3Client({
@@ -29,7 +31,16 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const fileKey = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}`;
+    if (!req.file.mimetype || !req.file.mimetype.startsWith("image/")) {
+      return res.status(400).json({ error: "Only image uploads are allowed" });
+    }
+
+    const originalName = req.file.originalname || "upload";
+    const ext = originalName.includes(".")
+      ? originalName.substring(originalName.lastIndexOf("."))
+      : "";
+
+    const fileKey = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`;
 
     await s3.send(
       new PutObjectCommand({
